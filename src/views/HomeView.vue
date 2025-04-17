@@ -2,10 +2,13 @@
   <div class="home">
     <h1>Здесь вы можете найти необходимую вам книгу</h1>
     <SearchBook />
+    <!-- <NameTitle /> -->
   </div>
 </template>
 
 <script>
+/* import NameTitle from "@/components/common/NameTitle.vue"; */
+
 import SearchBook from "@/components/SearchBook.vue";
 
 export default {
@@ -13,6 +16,7 @@ export default {
   data() {},
   components: {
     SearchBook,
+    /*  NameTitle, */
   },
 };
 </script>
