@@ -37,7 +37,7 @@
       Книги не найдены
     </div>
   </div>
-  <PaginationButton />
+  <PaginationButton v-if="!loading && !error && books.length" />
 </template>
 
 <script>
@@ -59,12 +59,9 @@ export default {
   methods: {
     handleInput() {
       clearTimeout(this.timeout);
-      console.log("1");
       this.timeout = setTimeout(() => {
-        console.log("2");
         this.searchBooks();
       }, 500);
-      console.log("3");
     },
     async searchBooks() {
       if (!this.searchInput.trim()) {

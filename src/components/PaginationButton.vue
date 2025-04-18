@@ -4,10 +4,10 @@
     <ul>
       <li
         v-for="page in pages"
-        :key="page"
-        :class="{ active: currentPage === page }"
+        :key="page.id"
+        :class="{ active: currentPage === page.name }"
       >
-        {{ page }}
+        {{ page.name }}
       </li>
     </ul>
     <BaseButton :disabled="!includedNext" title="Вперёд" @click="nextPage" />
@@ -20,7 +20,13 @@ import BaseButton from "@/components/common/BaseButton.vue";
 export default {
   data() {
     return {
-      pages: [1, 2, 3, 4, 5],
+      pages: [
+        { id: 1, name: 1 },
+        { id: 2, name: 2 },
+        { id: 3, name: 3 },
+        { id: 4, name: 4 },
+        { id: 5, name: 5 },
+      ],
       includedPrev: false,
       includedNext: true,
       activePages: false,
@@ -31,6 +37,16 @@ export default {
 
   components: {
     BaseButton,
+  },
+  computed: {
+    totalPages() {
+      return Math.ceil(this.pages.length / this.totalPage);
+    },
+    paginatedData() {
+      const start = (this.currentPage - 1) * this.totalPage;
+      const end = start + this.totalPage;
+      return this.pages.slice(start, end);
+    },
   },
   methods: {
     nextPage() {
