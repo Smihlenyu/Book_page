@@ -37,9 +37,12 @@
       Книги не найдены
     </div>
   </div>
+  <PaginationButton />
 </template>
 
 <script>
+import PaginationButton from "@/components/PaginationButton.vue";
+
 export default {
   data() {
     return {
@@ -50,7 +53,9 @@ export default {
       books: [],
     };
   },
-  components: {},
+  components: {
+    PaginationButton,
+  },
   methods: {
     handleInput() {
       clearTimeout(this.timeout);
@@ -102,7 +107,7 @@ export default {
 
 .search {
   width: 100%;
-  position: relative;
+  margin-bottom: 80px;
 
   & h2 {
     margin-top: 30px;
