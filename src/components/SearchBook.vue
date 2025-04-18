@@ -6,11 +6,6 @@
       v-model="searchInput"
       @input="handleInput"
     />
-    <!-- <BaseButton
-      title="Найти"
-      class="search__button"
-      @clickBtnSearch="handleSearch"
-    /> -->
     <h2>Список найденных книг:</h2>
     <div class="search__wrapper">
       <ul v-if="!loading && !error && books.length" class="search__list">
@@ -31,12 +26,6 @@
           </div>
         </li>
       </ul>
-      <PaginationPages
-        v-if="!loading && !error && books.length"
-        @prevPage="onPrevPage"
-        @nextPage="onNextPage"
-        class="search__pagination"
-      />
     </div>
 
     <div v-if="loading" class="search__loading">Ищем книгу....</div>
@@ -51,10 +40,6 @@
 </template>
 
 <script>
-import PaginationPages from "@/components/common/PaginationPages.vue";
-
-/* import BaseButton from "@/components/common/BaseButton.vue";
- */
 export default {
   data() {
     return {
@@ -63,17 +48,10 @@ export default {
       timeout: null,
       searchInput: "",
       books: [],
-      /* paginationPages: false, */
     };
   },
-  components: {
-    /* BaseButton */
-    PaginationPages,
-  },
+  components: {},
   methods: {
-    /* handleSearch() {
-      this.searchBooks();
-    }, */
     handleInput() {
       clearTimeout(this.timeout);
       console.log("1");
