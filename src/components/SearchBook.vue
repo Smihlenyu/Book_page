@@ -1,100 +1,106 @@
 <template>
   <div class="search">
-    <input
-      type="text"
-      placeholder="Введите название книги ..."
-      v-model="searchInput"
-      @input="handleInput"
-    />
-    <h2>Список найденных книг:</h2>
-    <div class="search__wrapper">
-      <ul v-if="!loading && !error && books.length" class="search__list">
-        <li v-for="book in books" :key="book.id" class="search__item">
-          <img
-            v-if="book.volumeInfo.imageLinks?.thumbnail"
-            :src="book.volumeInfo.imageLinks.thumbnail"
-            :alt="book.volumeInfo.title"
-            class="search__cover"
-            @error="handleImageError"
-          />
-          <div v-else class="no-cover">Нет обложки</div>
-          <div class="search__info">
-            <h3>{{ book.volumeInfo.title }}</h3>
-            <p v-if="book.volumeInfo.authors" class="authors">
-              Авторы: {{ book.volumeInfo.authors.join(", ") }}
-            </p>
-          </div>
-        </li>
-      </ul>
+    <div class="search__header">
+      <input
+        v-model="searchQuery"
+        @keyup.enter="fetchBooks"
+        placeholder="Поиск книг..."
+      />
+      <BaseButton @click="fetchBooks" title="Поиск" />
     </div>
 
-    <div v-if="loading" class="search__loading">Ищем книгу....</div>
-    <div v-if="error" class="search__error">{{ error }}</div>
-    <div
-      v-if="!loading && !error && searchInput && !books.length"
-      class="serch__empty"
-    >
-      Книги не найдены
+    <div v-if="loading">Загрузка...</div>
+    <div v-else-if="error">{{ error }}</div>
+    <div v-else>
+      <div class="search__books">
+        <div v-for="book in books" :key="book.id" class="search__book">
+          <img
+            :src="book.volumeInfo.imageLinks?.thumbnail || placeholderImg"
+            alt="Обложка"
+          />
+          <h3>{{ book.volumeInfo.title }}</h3>
+          <p v-if="book.volumeInfo.authors">
+            {{ book.volumeInfo.authors.join(", ") }}
+          </p>
+        </div>
+      </div>
+
+      <div class="search__pagination">
+        <BaseButton
+          title="Назад"
+          @click="prevPage"
+          :disabled="currentPage === 0"
+        />
+        <span>Страница {{ currentPage + 1 }}</span>
+        <BaseButton
+          @click="nextPage"
+          :disabled="books.length < itemsPerPage"
+          title="Вперед"
+        />
+      </div>
     </div>
   </div>
-  <PaginationButton v-if="!loading && !error && books.length" />
 </template>
 
 <script>
-import PaginationButton from "@/components/PaginationButton.vue";
+import BaseButton from "./common/BaseButton.vue";
 
 export default {
   data() {
     return {
+      searchQuery: "",
+      books: [],
       loading: false,
       error: null,
-      timeout: null,
-      searchInput: "",
-      books: [],
+      currentPage: 0,
+      itemsPerPage: 12,
+      totalItems: 0,
+      placeholderImg: "https://via.placeholder.com/150",
     };
   },
   components: {
-    PaginationButton,
+    BaseButton,
   },
   methods: {
-    handleInput() {
-      clearTimeout(this.timeout);
-      this.timeout = setTimeout(() => {
-        this.searchBooks();
-      }, 500);
-    },
-    async searchBooks() {
-      if (!this.searchInput.trim()) {
-        this.books = [];
-        return;
-      }
+    async fetchBooks() {
       this.loading = true;
       this.error = null;
 
       try {
-        const url = new URL("https://www.googleapis.com/books/v1/volumes");
-        url.searchParams.append("q", this.searchInput);
-        url.searchParams.append("maxResults", 12);
-        url.searchParams.append("langRestrict", "ru");
-
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`Ошибка HTTP: ${response.status}`);
-        }
-
+        const startIndex = this.currentPage * this.itemsPerPage;
+        const response = await fetch(
+          `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(
+            this.searchQuery
+          )}&startIndex=${startIndex}&maxResults=${this.itemsPerPage}`
+        );
         const data = await response.json();
-        this.books = data.items || []; // Сохраняем найденные книги
+
+        this.books = data.items || [];
+        this.totalItems = data.totalItems || 0;
+
+        if (this.books.length === 0) {
+          this.error = "Книги не найдены";
+        }
       } catch (err) {
-        this.noSearch = true;
-        ("Не удалось выполнить поиск. Пожалуйста, попробуйте позже.");
-        console.error("Ошибка поиска:", err);
+        this.error = "Ошибка загрузки данных";
+        this.books = [];
       } finally {
         this.loading = false;
       }
     },
-    onPrevPage() {},
-    onNextPage() {},
+    nextPage() {
+      this.currentPage++;
+      this.fetchBooks();
+    },
+    prevPage() {
+      if (this.currentPage > 0) {
+        this.currentPage--;
+        this.fetchBooks();
+      }
+    },
+  },
+  mounted() {
+    this.fetchBooks();
   },
 };
 </script>
@@ -103,56 +109,51 @@ export default {
 @import "@/assets/style/main.scss";
 
 .search {
-  width: 100%;
-  margin-bottom: 80px;
-
-  & h2 {
-    margin-top: 30px;
-    margin-bottom: 30px;
-  }
-
   & input {
     padding: 10px 20px;
-    max-width: 350px;
+    max-width: 550px;
     width: 100%;
+    margin-right: 20px;
   }
 
-  &__button {
-    max-width: 85px;
-    margin-left: 30px;
-  }
-
-  & ul {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    align-items: center;
-    justify-content: center;
-    gap: 100px 0px;
+  &__header {
     margin-bottom: 30px;
 
-    & li {
-      width: 230px;
-      height: 270px;
+    display: flex;
+  }
+
+  &__pagination {
+    margin-top: 80px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    align-items: center;
+  }
+
+  &__loading {
+    display: flex;
+    align-items: normal;
+
+    & span {
+      margin-right: 10px;
+    }
+
+    & svg {
+      margin-top: 2px;
     }
   }
-  &__cover {
+
+  &__books {
+    display: grid;
+    grid-column-gap: 10px;
+    grid-row-gap: 70px;
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  &__book {
     width: 230px;
     height: 270px;
-    margin-bottom: 20px;
-  }
-  &__info {
-    margin-bottom: 20px;
-    width: 100%;
-
-    & h3 {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-      max-height: 20px;
-    }
 
     & p {
       font-size: 14px;
@@ -164,18 +165,21 @@ export default {
       width: 100%;
       max-height: 30px;
     }
-  }
+    & h3 {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+      max-height: 20px;
+    }
 
-  &__pagination {
-    margin-top: 50px;
-    display: flex;
-    justify-content: center;
-    margin-bottom: 30px;
-  }
-
-  &__wrapper {
-    display: grid;
-    gap: 30px;
+    & img {
+      width: 100%;
+      height: 100%;
+      margin-bottom: 10px;
+    }
   }
 }
 </style>
