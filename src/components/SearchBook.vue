@@ -112,33 +112,42 @@
         />
       </div>
     </div>
+    {{ books }}
   </div>
 </template>
 
 <script>
-import BaseButton from "@/components/common/BaseButton.vue";
-import BtnFavorites from "@/components/common/BtnFavorites.vue";
-import { mapActions } from "vuex";
+// import BaseButton from "@/components/common/BaseButton.vue";
+// import BtnFavorites from "@/components/common/BtnFavorites.vue";
+import { mapGetters, mapMutations } from "vuex";
 
 export default {
   data() {
-    return {
-      searchQuery: "Мстители",
-      books: [],
-      loading: false,
-      error: null,
-      currentPage: 0,
-      itemsPerPage: 12,
-      totalItems: 0,
-      placeholderImg: "https://via.placeholder.com/150",
-    };
+    // return {
+    //   searchQuery: "Мстители",
+    //   /* books: [],
+    //   loading: false,
+    //   error: null,
+    //   currentPage: 0,
+    //   itemsPerPage: 12,
+    //   totalItems: 0,
+    //   placeholderImg: "https://via.placeholder.com/150",
+    // };
+  },
+  computed: {
+    ...mapGetters({
+      books: "store/book/getBooks",
+    }),
   },
   components: {
-    BaseButton,
-    BtnFavorites,
+    // BaseButton,
+    // BtnFavorites,
   },
   methods: {
-    async fetchBooks() {
+    ...mapMutations({
+      setBooks: "store/book/setBooks",
+    }),
+    /* async fetchBooks() {
       this.loading = true;
       this.error = null;
 
@@ -176,14 +185,7 @@ export default {
     },
     addFavoritesPage() {
       console.log("dasdsd");
-    },
-  },
-  mounted() {
-    this.fetchBooks();
-  },
-  ...mapActions(["addFavorite"]),
-  addFavoritesPage(book) {
-    this.addFavorite(book);
+    }, */
   },
 };
 </script>
