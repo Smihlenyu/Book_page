@@ -1,14 +1,18 @@
 <template>
-  <div class="favorites">Избранные книги .....</div>
+  <div class="favorites"><SelectedBooks /></div>
 </template>
 
 <script>
+import SelectedBooks from "@/components/SelectedBooks.vue";
+
 export default {
   name: "FavoritesBook",
   data() {
     return {};
   },
-  components: {},
+  components: {
+    SelectedBooks,
+  },
 };
 </script>
 

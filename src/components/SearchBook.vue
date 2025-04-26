@@ -9,7 +9,75 @@
       <BaseButton @click="fetchBooks" title="Поиск" />
     </div>
 
-    <div v-if="loading">Загрузка...</div>
+    <div v-if="loading" class="search__loading">
+      <span>Загрузка</span>
+      <svg
+        fill="hsl(228, 97%, 42%)"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        width="15px"
+        height="15px"
+      >
+        <g>
+          <rect x="11" y="1" width="2" height="5" opacity=".14" />
+          <rect
+            x="11"
+            y="1"
+            width="2"
+            height="5"
+            transform="rotate(30 12 12)"
+            opacity=".29"
+          />
+          <rect
+            x="11"
+            y="1"
+            width="2"
+            height="5"
+            transform="rotate(60 12 12)"
+            opacity=".43"
+          />
+          <rect
+            x="11"
+            y="1"
+            width="2"
+            height="5"
+            transform="rotate(90 12 12)"
+            opacity=".57"
+          />
+          <rect
+            x="11"
+            y="1"
+            width="2"
+            height="5"
+            transform="rotate(120 12 12)"
+            opacity=".71"
+          />
+          <rect
+            x="11"
+            y="1"
+            width="2"
+            height="5"
+            transform="rotate(150 12 12)"
+            opacity=".86"
+          />
+          <rect
+            x="11"
+            y="1"
+            width="2"
+            height="5"
+            transform="rotate(180 12 12)"
+          />
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            calcMode="discrete"
+            dur="0.75s"
+            values="0 12 12;30 12 12;60 12 12;90 12 12;120 12 12;150 12 12;180 12 12;210 12 12;240 12 12;270 12 12;300 12 12;330 12 12;360 12 12"
+            repeatCount="indefinite"
+          />
+        </g>
+      </svg>
+    </div>
     <div v-else-if="error">{{ error }}</div>
     <div v-else>
       <div class="search__books">
@@ -18,10 +86,15 @@
             :src="book.volumeInfo.imageLinks?.thumbnail || placeholderImg"
             alt="Обложка"
           />
-          <h3>{{ book.volumeInfo.title }}</h3>
-          <p v-if="book.volumeInfo.authors">
-            {{ book.volumeInfo.authors.join(", ") }}
-          </p>
+          <div class="search__block">
+            <div class="search__title">
+              <h3>{{ book.volumeInfo.title }}</h3>
+              <p v-if="book.volumeInfo.authors">
+                {{ book.volumeInfo.authors.join(", ") }}
+              </p>
+            </div>
+            <BtnFavorites @click="addFavoritesPage(book)" />
+          </div>
         </div>
       </div>
 
@@ -43,12 +116,14 @@
 </template>
 
 <script>
-import BaseButton from "./common/BaseButton.vue";
+import BaseButton from "@/components/common/BaseButton.vue";
+import BtnFavorites from "@/components/common/BtnFavorites.vue";
+import { mapActions } from "vuex";
 
 export default {
   data() {
     return {
-      searchQuery: "",
+      searchQuery: "Мстители",
       books: [],
       loading: false,
       error: null,
@@ -60,6 +135,7 @@ export default {
   },
   components: {
     BaseButton,
+    BtnFavorites,
   },
   methods: {
     async fetchBooks() {
@@ -98,9 +174,16 @@ export default {
         this.fetchBooks();
       }
     },
+    addFavoritesPage() {
+      console.log("dasdsd");
+    },
   },
   mounted() {
     this.fetchBooks();
+  },
+  ...mapActions(["addFavorite"]),
+  addFavoritesPage(book) {
+    this.addFavorite(book);
   },
 };
 </script>
@@ -121,19 +204,34 @@ export default {
 
     display: flex;
   }
+  &__block {
+    display: flex;
+    justify-content: space-between;
+    max-width: 270px;
+    align-items: center;
+    max-height: 50px;
+  }
+
+  &__title {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    max-width: 230px;
+    height: 40px;
+  }
 
   &__pagination {
-    margin-top: 80px;
+    margin-top: 120px;
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-bottom: 30px;
+    padding-bottom: 20px;
     align-items: center;
   }
 
   &__loading {
     display: flex;
-    align-items: normal;
+    align-items: center;
 
     & span {
       margin-right: 10px;
@@ -147,13 +245,15 @@ export default {
   &__books {
     display: grid;
     grid-column-gap: 10px;
-    grid-row-gap: 70px;
+    grid-row-gap: 50px;
     grid-template-columns: repeat(4, 1fr);
+    position: relative;
   }
 
   &__book {
-    width: 230px;
-    height: 270px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
     & p {
       font-size: 14px;
@@ -164,6 +264,7 @@ export default {
       text-overflow: ellipsis;
       width: 100%;
       max-height: 30px;
+      max-width: 270px;
     }
     & h3 {
       display: -webkit-box;
@@ -173,12 +274,15 @@ export default {
       text-overflow: ellipsis;
       width: 100%;
       max-height: 20px;
+      max-width: 270px;
     }
 
     & img {
       width: 100%;
       height: 100%;
       margin-bottom: 10px;
+      width: 270px;
+      height: 300px;
     }
   }
 }
